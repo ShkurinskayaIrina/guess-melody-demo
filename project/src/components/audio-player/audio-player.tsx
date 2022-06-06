@@ -1,4 +1,4 @@
-import {Fragment, useState, useEffect, useRef} from 'react';
+import {Fragment, useState, useEffect, useRef, useCallback} from 'react';
 
 type AudioPlayerProps = {
   isPlaying: boolean;
@@ -11,18 +11,17 @@ function AudioPlayer({isPlaying, src, onPlayButtonClick}: AudioPlayerProps): JSX
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    if (audioRef.current !== null) {
-      audioRef.current.onloadeddata = () => setIsLoading(false);
-    }
-
-    return () => {
-      if (audioRef.current !== null) {
-        audioRef.current.onloadeddata = null;
-        audioRef.current = null;
+  const audioCallback = useCallback(
+    () => {
+      if (audioRef.current !== null && isLoading) {
+        audioRef.current.onloadeddata = () => setIsLoading(false);
       }
-    };
-  }, [src]);
+    },
+    [isLoading]);
+
+  useEffect(() => {
+    audioCallback();
+  }, [audioCallback]);
 
   useEffect(() => {
     if (audioRef.current === null) {
